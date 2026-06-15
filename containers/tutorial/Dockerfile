@@ -1,0 +1,72 @@
+###############################################################################
+# YGM Tutorial Dockerfile
+#
+# Runs openvscode-server (browser-based VSCode) under supervisord so
+# tutorial participants can work through exercises in their browser.
+###############################################################################
+
+FROM ghcr.io/llnl/radiuss:gcc-14-ubuntu-24.04
+
+ARG USER=tutorial
+ARG OPENVSCODE_VERSION=v1.109.5
+ENV HOME=/home/${USER}
+
+# Switch to root for installations (RADIUSS base runs as 'radiuss' user by default)
+USER root
+
+# Install all dependencies in one layer
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+ && apt-get install -y --no-install-recommends \
+    supervisor \
+    clangd-19 \
+    clang-tidy-19 \
+    openmpi-bin \
+    libopenmpi-dev \
+    python3-venv \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-19 100
+RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-19 100
+
+# Install pyarrow for YGM Parquet support
+# Using --break-system-packages is safe here since this is a single-purpose tutorial container
+RUN pip3 install --break-system-packages pyarrow
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash ${USER}
+
+# Install openvscode-server. The stable symlink at /opt/openvscode-server
+# means supervisord.conf doesn't need to know the exact version.
+WORKDIR /opt/archives
+RUN curl -fL \
+        "https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-${OPENVSCODE_VERSION}/openvscode-server-${OPENVSCODE_VERSION}-linux-x64.tar.gz" \
+        -o "openvscode-server-${OPENVSCODE_VERSION}-linux-x64.tar.gz" \
+ && tar xzf "openvscode-server-${OPENVSCODE_VERSION}-linux-x64.tar.gz" \
+ && chown -R ${USER}:${USER} "openvscode-server-${OPENVSCODE_VERSION}-linux-x64" \
+ && ln -s "/opt/archives/openvscode-server-${OPENVSCODE_VERSION}-linux-x64" /opt/openvscode-server
+
+USER ${USER}
+
+# Copy the project into the user's home
+COPY --chown=${USER}:${USER} . ${HOME}/tutorial/
+
+# Pre-build the YGM tutorial exercises
+# BUILD_TESTING=OFF skips faker's tests which aren't needed for the tutorial
+WORKDIR ${HOME}/tutorial
+RUN mkdir -p build \
+ && cd build \
+ && cmake -DBUILD_TESTING=OFF .. \
+ && make -j$(nproc)
+
+USER root
+ADD ./containers/tutorial/supervisord.conf /etc/supervisord.conf
+RUN sed -i "s/XXX/${USER}/g" /etc/supervisord.conf
+
+RUN touch /var/log/openvscode-server.log \
+ && chown -R ${USER}:${USER} /var/log/openvscode-server.log
+
+# supervisord must run as root to bind to ports, but it will run
+# openvscode-server as the tutorial user (configured in supervisord.conf)
+EXPOSE 3000
+
+CMD ["/usr/bin/supervisord"]
