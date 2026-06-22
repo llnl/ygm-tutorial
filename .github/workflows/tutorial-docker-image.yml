@@ -4,11 +4,13 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
+    # TODO for testing
+    # branches: ["main"]
+    branches: ["tdrwenski-add-dockerfile-openvscode"]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: llnl/ygm-tutorial/tutorial
+  IMAGE_NAME: ${{ github.repository }}/tutorial
 
 permissions:
   contents: read
