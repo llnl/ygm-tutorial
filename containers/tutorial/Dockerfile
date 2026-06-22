@@ -9,7 +9,6 @@ FROM ghcr.io/llnl/radiuss:gcc-14-ubuntu-24.04
 
 ARG USER=tutorial
 ARG OPENVSCODE_VERSION=v1.109.5
-ENV HOME=/home/${USER}
 
 # Switch to root for installations (RADIUSS base runs as 'radiuss' user by default)
 USER root
@@ -30,10 +29,12 @@ RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-
 
 # Install pyarrow for YGM Parquet support
 # Using --break-system-packages is safe here since this is a single-purpose tutorial container
-RUN pip3 install --break-system-packages pyarrow
+RUN pip3 install --break-system-packages --no-cache-dir pyarrow
 
 # Create non-root user
-RUN useradd --create-home --shell /bin/bash ${USER}
+RUN useradd --create-home --home-dir /home/${USER} --shell /bin/bash ${USER}
+
+ENV HOME=/home/${USER}
 
 # Install openvscode-server. The stable symlink at /opt/openvscode-server
 # means supervisord.conf doesn't need to know the exact version.
@@ -47,12 +48,17 @@ RUN curl -fL \
 
 USER ${USER}
 
+# Disable Workspace Trust prompts for this single-purpose tutorial image.
+RUN mkdir -p ${HOME}/.openvscode-server/data/User \
+ && printf '{\n  "security.workspace.trust.enabled": false\n}\n' \
+      > ${HOME}/.openvscode-server/data/User/settings.json
+
 # Copy the project into the user's home
-COPY --chown=${USER}:${USER} . ${HOME}/tutorial/
+COPY --chown=${USER}:${USER} . ${HOME}/ygm-tutorial/
 
 # Pre-build the YGM tutorial exercises
 # BUILD_TESTING=OFF skips faker's tests which aren't needed for the tutorial
-WORKDIR ${HOME}/tutorial
+WORKDIR ${HOME}/ygm-tutorial
 RUN mkdir -p build \
  && cd build \
  && cmake -DBUILD_TESTING=OFF .. \
@@ -65,8 +71,6 @@ RUN sed -i "s/XXX/${USER}/g" /etc/supervisord.conf
 RUN touch /var/log/openvscode-server.log \
  && chown -R ${USER}:${USER} /var/log/openvscode-server.log
 
-# supervisord must run as root to bind to ports, but it will run
-# openvscode-server as the tutorial user (configured in supervisord.conf)
 EXPOSE 3000
 
 CMD ["/usr/bin/supervisord"]
