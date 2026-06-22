@@ -2,7 +2,9 @@ name: Build tutorial image
 
 on:
   push:
-    branches: ["main"]
+    # TODO for testing
+    # branches: ["main"]
+    branches: ["tdrwenski-add-dockerfile-openvscode"]
   pull_request:
     # TODO for testing
     # branches: ["main"]
