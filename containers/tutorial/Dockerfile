@@ -1,19 +1,11 @@
-###############################################################################
-# YGM Tutorial Dockerfile
-#
-# Runs openvscode-server (browser-based VSCode) under supervisord so
-# tutorial participants can work through exercises in their browser.
-###############################################################################
-
 FROM ghcr.io/llnl/radiuss:gcc-14-ubuntu-24.04
 
 ARG USER=tutorial
 ARG OPENVSCODE_VERSION=v1.109.5
 
-# Switch to root for installations (RADIUSS base runs as 'radiuss' user by default)
+# Switch to root for installations
 USER root
 
-# Install all dependencies in one layer
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
  && apt-get install -y --no-install-recommends \
     supervisor \
@@ -27,11 +19,8 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-19 100
 RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-19 100
 
-# Install pyarrow for YGM Parquet support
-# Using --break-system-packages is safe here since this is a single-purpose tutorial container
 RUN pip3 install --break-system-packages --no-cache-dir pyarrow
 
-# Create non-root user
 RUN useradd --create-home --home-dir /home/${USER} --shell /bin/bash ${USER}
 
 ENV HOME=/home/${USER}
@@ -48,16 +37,14 @@ RUN curl -fL \
 
 USER ${USER}
 
-# Disable Workspace Trust prompts for this single-purpose tutorial image.
+# Disable Workspace Trust prompts
 RUN mkdir -p ${HOME}/.openvscode-server/data/User \
  && printf '{\n  "security.workspace.trust.enabled": false\n}\n' \
       > ${HOME}/.openvscode-server/data/User/settings.json
 
-# Copy the project into the user's home
 COPY --chown=${USER}:${USER} . ${HOME}/ygm-tutorial/
 
 # Pre-build the YGM tutorial exercises
-# BUILD_TESTING=OFF skips faker's tests which aren't needed for the tutorial
 WORKDIR ${HOME}/ygm-tutorial
 RUN mkdir -p build \
  && cd build \
