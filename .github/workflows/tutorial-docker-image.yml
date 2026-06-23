@@ -2,13 +2,9 @@ name: Build tutorial image
 
 on:
   push:
-    # TODO for testing
-    # branches: ["main"]
-    branches: ["tdrwenski-add-dockerfile-openvscode"]
+    branches: ["main"]
   pull_request:
-    # TODO for testing
-    # branches: ["main"]
-    branches: ["tdrwenski-add-dockerfile-openvscode"]
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
