@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(YGM-Tutorial
-        VERSION 0.9
+        VERSION 0.10
         DESCRIPTION "YGM Tutorial"
         LANGUAGES CXX)
 
@@ -10,22 +10,24 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
 
 #
 #  YGM
-set(YGM_REQUIRE_PARQUET ON)
 set(YGM_INSTALL_PARQUET ON)
 FetchContent_Declare(YGM
     GIT_REPOSITORY https://github.com/llnl/ygm.git
-    GIT_TAG v0.9
+    GIT_TAG v0.10-dev
         )
 FetchContent_MakeAvailable(YGM)
 
 #
 # Faker
+set(FAKER_BUILD_TESTING OFF)
 FetchContent_Declare(faker
     GIT_REPOSITORY https://github.com/cieslarmichal/faker-cxx
-    GIT_TAG v4.0.1
+    GIT_TAG v4.3.2
+    GIT_SUBMODULES ""
         )
 FetchContent_MakeAvailable(faker)
 
@@ -70,7 +72,7 @@ function(add_tutorial_executable name)
     add_executable(${name} ${name}.cpp)
     add_common_compile_options(${name})
     target_include_directories(${name} PRIVATE ${PROJECT_SOURCE_DIR}/include ${BOOST_INCLUDE_DIRS})
-    target_link_libraries(${name} PRIVATE Boost::json faker-cxx Parquet::parquet_shared Arrow::arrow_shared)
+    target_link_libraries(${name} PRIVATE Boost::json Boost::uuid faker-cxx Parquet::parquet_shared Arrow::arrow_shared)
     setup_ygm_target(${name})
 endfunction()
 
