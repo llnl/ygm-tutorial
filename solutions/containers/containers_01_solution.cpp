@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
   {
     ygm::container::counting_set<std::string> cset(world, mybag);
 
+    // you could use 'auto' to define kg
     std::map<std::string, size_t> kg = cset.gather_keys({"green"});
     world.cout0("Number of green: ", kg["green"]);
   }

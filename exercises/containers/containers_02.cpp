@@ -21,9 +21,8 @@ int main(int argc, char** argv) {
   // Step 1: Print and compare the partitioning of elements between bag & set //
   //////////////////////////////////////////////////////////////////////////////
 
-
   ////////////////////////////////////////////////////////////////////////////////
-  // Note how the output from all the ranks gets interleaved in                 //
-  // nondeterministic order.   Compare with multiple runs.                      //
+  // Note how the output from all the ranks gets interleaved in //
+  // nondeterministic order.   Compare with multiple runs. //
   ////////////////////////////////////////////////////////////////////////////////
 }

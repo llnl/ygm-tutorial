@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   //////////////////////////////////////////////////////////////////////
   // Step 1: Modify the following code to print out the async sender. //
   //////////////////////////////////////////////////////////////////////
-  auto my_first_async = []() {
+  auto my_first_async = [](/*hint, something goes here*/) {
     std::cout << "Received async from " << /*finish me <<*/ std::endl;
   };
 
