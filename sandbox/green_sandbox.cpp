@@ -12,5 +12,7 @@
 int main(int argc, char** argv) {
   ygm::comm world(&argc, &argv);
 
-  world.cout(faker::music::artist());
+  world.welcome();
+
+  return 0;
 }
