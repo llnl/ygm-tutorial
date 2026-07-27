@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: MIT
 
 #include <ygm/comm.hpp>
-#include <ygm/container/map.hpp>
-#include <ygm/container/set.hpp>
+
+//////////////////////////////////////////////////
+// Empty sandbox for testing and debugging.     //
+//////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
   ygm::comm world(&argc, &argv);

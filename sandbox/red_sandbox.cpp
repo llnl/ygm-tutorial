@@ -4,14 +4,15 @@
 // SPDX-License-Identifier: MIT
 
 #include <ygm/comm.hpp>
-#include <ygm/container/bag.hpp>
+
+//////////////////////////////////////////////////
+// Empty sandbox for testing and debugging.     //
+//////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
   ygm::comm world(&argc, &argv);
 
   world.welcome();
-
-
 
   return 0;
 }
